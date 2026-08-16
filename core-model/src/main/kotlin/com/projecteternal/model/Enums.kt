@@ -70,6 +70,10 @@ enum class RetainerSpecialization {
     FISHER,
     FORAGER,
     CRAFTER,
+    /** Rare-resource specialist (gathering-only in Pack 01). */
+    PROSPECTOR,
+    /** SPECIAL/industrial-node specialist (gathering-only in Pack 01). */
+    FORGER,
 }
 
 @Serializable

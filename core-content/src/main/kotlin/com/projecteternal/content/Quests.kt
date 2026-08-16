@@ -233,6 +233,265 @@ object Quests {
             ),
             autoAccept = true,
         ),
+
+        // ================= PACK 01 — OUTER REACHES =================
+
+        // ---- Cindervale entry (no circular gate) ----
+        QuestDefinition(
+            id = "q_cindervale",
+            name = "The Glass Country",
+            description = "Prove your forge can hold an alloy, and the high road to the ash country opens.",
+            category = QuestCategory.MAIN,
+            prerequisites = listOf("q_emberreach_ash"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.HAVE_ITEMS, targetId = "steel", targetCount = 1, description = "Hold a bar of Steel"),
+            ),
+            reward = QuestReward(
+                marks = 200, charXp = 150,
+                unlocks = listOf("region:cindervale"),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_cindervale_market",
+            name = "Ashveil Market",
+            description = "Find the market on the high road and learn the ash country's ways.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("region:cindervale"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.DISCOVER_NODE, targetId = "node_ashveil_market", description = "Discover Ashveil Market"),
+            ),
+            reward = QuestReward(
+                marks = 100, charXp = 80,
+                unlocks = listOf("recipe:cinder_gear"),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_cinder_steel",
+            name = "The Warm Furnace",
+            description = "Forge Cinder Steel — the backbone of the ash country's craft.",
+            category = QuestCategory.LIFESKILL,
+            prerequisites = listOf("region:cindervale"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.CRAFT, targetId = "cinder_steel", targetCount = 2, description = "Forge Cinder Steel"),
+            ),
+            reward = QuestReward(
+                marks = 150, charXp = 120,
+                unlocks = listOf("recipe:sword_cinder"),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_cinder_king",
+            name = "The Ash Sovereign",
+            description = "End the thing that guards the Glass-Pass, and the glass country gives up its secrets.",
+            category = QuestCategory.MAIN,
+            prerequisites = listOf("region:cindervale", "recipe:cinder_gear"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.KILL, targetId = "ash_sovereign", targetCount = 1, description = "Slay the Ash Sovereign"),
+            ),
+            reward = QuestReward(
+                marks = 400, charXp = 300,
+                items = listOf(ItemStack("cinder_core", 1)),
+                unlocks = listOf("recipe:glasswork", "recipe:jewelry"),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_cinder_regional",
+            name = "Walking the Ashes",
+            description = "Learn every corner of Cindervale.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("region:cindervale"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.DISCOVER_NODE, targetId = "node_cinder_quarry", description = "Discover Cinderlode Quarry"),
+                Objective("o2", ObjectiveType.DISCOVER_NODE, targetId = "node_sootbark_woods", description = "Discover Sootbark Woods"),
+                Objective("o3", ObjectiveType.DISCOVER_NODE, targetId = "node_sunbaked_shallows", description = "Discover Sunbaked Shallows"),
+                Objective("o4", ObjectiveType.DISCOVER_NODE, targetId = "node_cinder_terraces", description = "Discover Cindervale Terraces"),
+            ),
+            reward = QuestReward(marks = 120, charXp = 100),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_cinder_armor",
+            name = "Dressed in Ash",
+            description = "Stitch the Ashbark gloves and boots and wear them with pride.",
+            category = QuestCategory.LIFESKILL,
+            prerequisites = listOf("recipe:cinder_gear"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.CRAFT, targetId = "gloves_ashbark", targetCount = 1, description = "Craft Ashbark Gloves"),
+                Objective("o2", ObjectiveType.CRAFT, targetId = "boots_ashbark", targetCount = 1, description = "Craft Ashbark Boots"),
+            ),
+            reward = QuestReward(marks = 150, charXp = 120),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_glazer",
+            name = "The Glasswright",
+            description = "Vitrify emberglass and master the glass country's trade.",
+            category = QuestCategory.LIFESKILL,
+            prerequisites = listOf("recipe:glasswork"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.CRAFT, targetId = "glass_shard", targetCount = 10, description = "Vitrify Glass Shards"),
+            ),
+            reward = QuestReward(marks = 120, charXp = 100),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_jeweler",
+            name = "A Ring of Embers",
+            description = "Set the Ember Ring and learn the jeweler's craft.",
+            category = QuestCategory.LIFESKILL,
+            prerequisites = listOf("recipe:jewelry"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.CRAFT, targetId = "ring_ember", targetCount = 1, description = "Craft an Ember Ring"),
+            ),
+            reward = QuestReward(marks = 150, charXp = 120),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_advance_begin",
+            name = "Kindling",
+            description = "Push a weapon past +5. The ember catches.",
+            category = QuestCategory.LIFESKILL,
+            prerequisites = listOf("screen:enhance", "region:cindervale"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.ENHANCE_ANY_TO, targetCount = 5, description = "Reach a +5 enhancement"),
+            ),
+            reward = QuestReward(
+                marks = 150, charXp = 120,
+                items = listOf(ItemStack("shard_resonance", 5)),
+            ),
+            autoAccept = true,
+        ),
+
+        // ---- Stormreach expedition chain ----
+        QuestDefinition(
+            id = "q_stormreach_expeditions",
+            name = "Into the Squall",
+            description = "Map the storm country's new seams.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("region:stormreach"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.DISCOVER_NODE, targetId = "node_storm_quarry", description = "Discover Stormscale Quarry"),
+                Objective("o2", ObjectiveType.DISCOVER_NODE, targetId = "node_thunderwood", description = "Discover Thunderwood"),
+                Objective("o3", ObjectiveType.DISCOVER_NODE, targetId = "node_storm_field", description = "Discover Stormfield"),
+                Objective("o4", ObjectiveType.DISCOVER_NODE, targetId = "node_deepstorm_spire", description = "Discover Deepstorm Spire"),
+            ),
+            reward = QuestReward(
+                marks = 250, charXp = 180,
+                items = listOf(ItemStack("core_storm", 1)),
+            ),
+            autoAccept = true,
+        ),
+
+        // ---- Frostreach entry (no circular gate) ----
+        QuestDefinition(
+            id = "q_frostreach",
+            name = "The High Fells",
+            description = "Master the Cindervale forge and hold Cinder Steel — the high road to Frostreach opens.",
+            category = QuestCategory.MAIN,
+            prerequisites = listOf("q_stormreach_herald"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.HAVE_ITEMS, targetId = "cinder_steel", targetCount = 2, description = "Hold Cinder Steel"),
+            ),
+            reward = QuestReward(
+                marks = 300, charXp = 220,
+                unlocks = listOf("region:frostreach"),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_frostvein",
+            name = "The Cold Vein",
+            description = "Frostvein grows in the ice. Gather enough to feed the forge.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("region:frostreach"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.GATHER, targetId = "frostvein", targetCount = 10, description = "Gather Frostvein"),
+            ),
+            reward = QuestReward(
+                marks = 250, charXp = 200,
+                items = listOf(ItemStack("shard_resonance", 10)),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_frost_warden",
+            name = "The Glacier Warden",
+            description = "Wake the old thing under the ice and put it back down. The foundry learns.",
+            category = QuestCategory.MAIN,
+            prerequisites = listOf("region:frostreach"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.KILL, targetId = "glacier_warden", targetCount = 1, description = "Slay the Glacier Warden"),
+            ),
+            reward = QuestReward(
+                marks = 700, charXp = 500,
+                items = listOf(ItemStack("frostvein", 3)),
+                unlocks = listOf("recipe:frostforge"),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_herbalist_highland",
+            name = "The Tundra Herbalist",
+            description = "The highland tundra is a herbalist's first true home. Gather Frostmoss.",
+            category = QuestCategory.LIFESKILL,
+            prerequisites = listOf("region:frostreach"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.GATHER, targetId = "frostmoss", targetCount = 15, description = "Gather Frostmoss"),
+            ),
+            reward = QuestReward(marks = 150, charXp = 120),
+            autoAccept = true,
+        ),
+
+        // ---- Enhancement checkpoints ----
+        QuestDefinition(
+            id = "q_frostvein_enhance",
+            name = "The Frostvein Forge",
+            description = "Cross into the ADVANCED band — reach +16.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("region:frostreach"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.ENHANCE_ANY_TO, targetCount = 16, description = "Reach a +16 enhancement"),
+            ),
+            reward = QuestReward(
+                marks = 300, charXp = 250,
+                items = listOf(ItemStack("frostvein", 5)),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_advance_mid",
+            name = "Steel Resolve",
+            description = "Push past +20. The foundry respects the climb.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("q_frostvein_enhance"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.ENHANCE_ANY_TO, targetCount = 20, description = "Reach a +20 enhancement"),
+            ),
+            reward = QuestReward(
+                marks = 400, charXp = 300,
+                items = listOf(ItemStack("ward_frost", 1)),
+            ),
+            autoAccept = true,
+        ),
+        QuestDefinition(
+            id = "q_advance_near",
+            name = "Threshold",
+            description = "Climb to +30. The transcendent gate stands just beyond.",
+            category = QuestCategory.REGIONAL,
+            prerequisites = listOf("q_advance_mid"),
+            objectives = listOf(
+                Objective("o1", ObjectiveType.ENHANCE_ANY_TO, targetCount = 30, description = "Reach a +30 enhancement"),
+            ),
+            reward = QuestReward(
+                marks = 600, charXp = 450,
+                items = listOf(ItemStack("core_storm", 2)),
+            ),
+            autoAccept = true,
+        ),
     ).associateBy { it.id }
 
     fun get(id: QuestId): QuestDefinition = all[id]

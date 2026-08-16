@@ -61,6 +61,9 @@ object Skills {
         SkillDefinition("engineering", "Engineering", SkillCategory.CRAFTING,
             "Every machine is a promise that parts will fit.",
             perkPerLevel = PerkType.EFFICIENCY_PERCENT, perkValuePerLevel = 1.0),
+        SkillDefinition("jewelry", "Jewelry", SkillCategory.CRAFTING,
+            "Set the stone, hold the breath. The ring remembers the light.",
+            perkPerLevel = PerkType.EFFICIENCY_PERCENT, perkValuePerLevel = 1.0),
     ).associateBy { it.id }
 
     fun get(id: SkillId): SkillDefinition = all[id]

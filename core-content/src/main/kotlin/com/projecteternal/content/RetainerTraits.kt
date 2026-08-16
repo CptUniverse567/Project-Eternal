@@ -52,6 +52,13 @@ object RetainerTraits {
             luckMultiplier = 0.9,
             icon = "🪨",
         ),
+        RetainerTraitDef(
+            id = "vein_sense", name = "Vein Sense",
+            description = "+20% find chance and +5% gathering speed. They smell the rare veins beneath the rock.",
+            gatheringSpeedMultiplier = 1.05,
+            luckMultiplier = 1.2,
+            icon = "💠",
+        ),
     ).associateBy { it.id }
 
     fun get(id: String): RetainerTraitDef = all[id]

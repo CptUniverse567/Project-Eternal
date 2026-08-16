@@ -37,4 +37,11 @@ object SimConfig {
 
     /** Gatherer tool bonus multiplier (Journeyman's Pickaxe). */
     const val PICKAXE_SPEED_MULTIPLIER: Double = 1.25
+
+    // ---- Pack 01: worker specialization affinity (gathering-only) ----
+    /** FORGER gathers faster at SPECIAL / industrial (MINE) nodes. */
+    const val FORGER_NODE_MULTIPLIER: Double = 1.15
+
+    /** PROSPECTOR find-chance bonus (rare material acquisition). */
+    const val PROSPECTOR_LUCK_MULTIPLIER: Double = 1.3
 }

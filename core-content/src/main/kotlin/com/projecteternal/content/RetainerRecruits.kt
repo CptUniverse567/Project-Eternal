@@ -92,6 +92,28 @@ object RetainerRecruits {
             icon = "🧺",
             description = "Grew up weathering the coast. Forest and special scavenging.",
         ),
+        RetainerRecruitDef(
+            id = "retainer_pella",
+            name = "Pella",
+            specialization = RetainerSpecialization.FORGER,
+            costMarks = 950,
+            unlockToken = "region:cindervale",
+            gatheringSpeed = 1.15,
+            luck = 1.05,
+            icon = "🔨",
+            description = "Works the SPECIAL and industrial seams of the ash country. A gathering specialist, not yet a craftsman.",
+        ),
+        RetainerRecruitDef(
+            id = "retainer_runa",
+            name = "Runa",
+            specialization = RetainerSpecialization.PROSPECTOR,
+            costMarks = 1400,
+            unlockToken = "region:frostreach",
+            gatheringSpeed = 1.1,
+            luck = 1.3,
+            icon = "💎",
+            description = "Chases rare veins from Cindervale to the high fells. Luck, and patience.",
+        ),
     ).associateBy { it.id }
 
     fun get(id: RetainerId): RetainerRecruitDef = all[id]

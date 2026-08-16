@@ -902,3 +902,24 @@ candidate audit remains valid.
 
 Correction pass applied to the planning document only. Pack 01 implementation begins only
 after ChatGPT reviews the corrected roadmap and explicitly authorizes it.
+
+---
+
+## IMPLEMENTATION STATUS — Pack 01 (Outer Reaches), `0.2.0`
+
+Pack 01 is **implemented and verified** (see `docs/playtest-pack-01.md` and
+`docs/decisions.md` §"Pack 01"). Design intent above is unchanged; where implementation
+refined the design, the deviation is documented in `docs/decisions.md`:
+
+- **Cindervale** and **Frostreach** implemented as specified (regional mechanics, nodes,
+  chains, monsters, bosses, gear, workers, quests, economy).
+- **Stormreach** deepened (4 nodes, 4 monsters/elites, expedition quest).
+- **Jewelry** skill + ACCESSORY/GLOVES/BOOTS gear families implemented.
+- **Enhancement**: frostvein added as an ADVANCED alternate material; +5/+16/+20/+30
+  checkpoint quests added; the +31 gate is unchanged.
+- **Deadlock audit** found and fixed three skill-level deadlocks (Refining, Engineering,
+  Jewelry) — all content-data fixes; a ContentIntegrity guardrail now prevents recurrence.
+- Full JVM suite **166 tests / 0 failures**; instrumented **3/3**; `assembleDebug` green;
+  fresh-save emulator playthrough performed.
+
+Pack 02 design (Mastery) is intentionally not started.

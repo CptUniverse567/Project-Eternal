@@ -62,6 +62,20 @@ fun AdventureScreen(repository: GameStateRepository, state: GameState) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    region.rareYield?.let { rare ->
+                        Text(
+                            "Rare find: ${Items.get(rare.defId).icon} ${Items.get(rare.defId).name} ${rare.chancePercent}%",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (region.hazardPerAction > 0) {
+                        Text(
+                            "⚠ ${region.name} saps your health — every action costs health, and no regen while gathering.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
             items(discoveredNodes.filter { it.regionId == regionId }) { node ->
@@ -104,6 +118,13 @@ private fun GatheringNodeCard(repository: GameStateRepository, state: GameState,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (com.projecteternal.content.Regions.get(def.regionId).hazardPerAction > 0) {
+                Text(
+                    "⚠ Hazardous — costs health",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = { repository.dispatch(GameIntent.StartActivity(ActivityType.GATHERING, nodeId)) },

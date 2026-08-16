@@ -48,6 +48,12 @@ data class ItemDefinition(
     val icon: String = "•",
     val description: String = "",
     val enhanceable: Boolean = false,
+    /** Restored health when used as a consumable (0 = not a healing consumable). */
+    val healAmount: Int = 0,
+    /** If set, this TOOL boosts gathering speed for nodes using this skill. */
+    val gatheringSkill: SkillId? = null,
+    /** Gathering speed multiplier granted by this tool on matching nodes. */
+    val gatheringSpeedMultiplier: Double = 1.0,
 )
 
 /** One entry in a monster's loot table. Guaranteed entries sum to 100%. */
@@ -105,6 +111,15 @@ data class RecipeDefinition(
     val description: String = "",
 )
 
+/**
+ * Regional rare-resource rule: every gathering action in the region has a
+ * per-action chance to also yield [defId]. One small, legible player-facing rule.
+ */
+data class RareYieldConfig(
+    val defId: ItemId,
+    val chancePercent: Int = 8,
+)
+
 data class RegionDefinition(
     val id: RegionId,
     val name: String,
@@ -114,6 +129,14 @@ data class RegionDefinition(
     val priceModifier: Double = 1.0,
     /** Multiplier applied to gathering yields earned inside this region, e.g. a regional boon. */
     val yieldMultiplier: Double = 1.0,
+    /**
+     * Hazard rule: each gathering action in this region chips this much health.
+     * Damage is floored so the character can never be driven below a safe HP
+     * floor; deterministic and offline-compatible. 0 = no hazard.
+     */
+    val hazardPerAction: Double = 0.0,
+    /** Regional rare-resource rule (e.g. Smoldering Veins, Crystal Snow). Null = none. */
+    val rareYield: RareYieldConfig? = null,
 )
 
 data class QuestReward(
@@ -157,6 +180,8 @@ data class EnhancementTable(
     /** key = current level, value = resonance shards consumed per attempt. */
     val shardsPerAttempt: Map<Int, Long>,
     val materialPerAttempt: ItemStack? = null,
+    /** Second, equivalent material accepted per attempt (player chooses one). */
+    val alternateMaterialPerAttempt: ItemStack? = null,
     val failure: FailureConsequence = FailureConsequence.DURABILITY_ONLY,
     /** Levels at or above this threshold suffer [failure]; below it failures only drain durability. */
     val downgradeThreshold: Int = Int.MAX_VALUE,

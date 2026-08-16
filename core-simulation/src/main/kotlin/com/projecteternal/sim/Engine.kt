@@ -158,7 +158,13 @@ class GameEngine {
         if (inst.durability <= 0) return state
         val shards = table.shardsPerAttempt[level] ?: return state
         if (state.inventoryCount("shard_resonance") < shards) return state
-        val material = table.materialPerAttempt
+        // Choose the material: explicit alternate request falls back to primary if absent.
+        val primary = table.materialPerAttempt
+        val alternate = table.alternateMaterialPerAttempt
+        val material = when {
+            intent.useAlternateMaterial && alternate != null -> alternate
+            else -> primary
+        }
         if (material != null && state.inventoryCount(material.defId) < material.count) return state
         if (table.unlockToken.isNotEmpty() && !state.hasUnlock(table.unlockToken)) return state
         val hasProtection = state.inventoryCount(table.protectionItem ?: "") >= 1
@@ -254,6 +260,8 @@ class GameEngine {
         RetainerSpecialization.FISHER -> type == NodeType.FISHERY
         RetainerSpecialization.FORAGER -> type == NodeType.FOREST || type == NodeType.SPECIAL
         RetainerSpecialization.CRAFTER -> type == NodeType.MINE || type == NodeType.FOREST
+        RetainerSpecialization.PROSPECTOR -> type == NodeType.MINE || type == NodeType.FOREST || type == NodeType.SPECIAL
+        RetainerSpecialization.FORGER -> type == NodeType.MINE || type == NodeType.SPECIAL
     }
 
     private fun acceptQuest(state: GameState, questId: String, now: Long): GameState {
@@ -268,13 +276,8 @@ class GameEngine {
         if (state.inventoryCount(defId) <= 0) return state
         val def = Items.get(defId)
         if (def.kind != ItemKind.CONSUMABLE) return state
-        val heal = when (defId) {
-            "potion_lesser" -> 50
-            "roasted_meat" -> 20
-            "bread" -> 25
-            "dried_fish" -> 18
-            else -> return state
-        }
+        val heal = def.healAmount
+        if (heal <= 0) return state
         val maxHp = CombatStatsMath.effectiveStats(state).maxHp
         val hp = (state.character.health + heal).coerceAtMost(maxHp)
         return state.removeItem(defId, 1).copy(character = state.character.copy(health = hp))

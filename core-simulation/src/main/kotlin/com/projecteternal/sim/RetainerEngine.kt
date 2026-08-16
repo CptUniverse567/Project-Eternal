@@ -54,14 +54,25 @@ object RetainerEngine {
             val actions = min(raw, staminaPossible)
             if (actions > 0) {
                 val gained = mutableMapOf<String, Long>()
-                val luck = RetainerTraits.luckMultiplier(retainer.traitIds) *
-                    com.projecteternal.content.Regions.get(node.regionId).yieldMultiplier
+                val region = com.projecteternal.content.Regions.get(node.regionId)
+                val luck = RetainerTraits.luckMultiplier(retainer.traitIds) * region.yieldMultiplier *
+                    (if (retainer.specialization == com.projecteternal.model.RetainerSpecialization.PROSPECTOR)
+                        SimConfig.PROSPECTOR_LUCK_MULTIPLIER else 1.0)
                 for (y in node.yields) {
                     val count = rng.poisson(actions * y.chancePercent / 100.0 * luck)
                     if (count > 0) {
                         gained[y.defId] = (gained[y.defId] ?: 0) + count
                         s = s.addItem(y.defId, count)
                         s = s.copy(stats = s.stats.addGather(y.defId, count))
+                    }
+                }
+                // Regional rare-resource rule also applies to retainer production.
+                region.rareYield?.let { rare ->
+                    val count = rng.poisson(actions * rare.chancePercent / 100.0 * luck)
+                    if (count > 0) {
+                        gained[rare.defId] = (gained[rare.defId] ?: 0) + count
+                        s = s.addItem(rare.defId, count)
+                        s = s.copy(stats = s.stats.addGather(rare.defId, count))
                     }
                 }
                 if (gained.isNotEmpty()) output[retainer.id] = gained

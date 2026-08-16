@@ -51,6 +51,7 @@ object ActivityEngine {
         rng: RandomSource,
     ): Pair<GameState, Delta> {
         val node = Nodes.get(nodeId)
+        val region = com.projecteternal.content.Regions.get(node.regionId)
         val activity = state.character.currentActivity!!
         val ratePerHour = Rates.gatheringActionsPerHour(state, node)
         val total = activity.carry + elapsedSeconds * ratePerHour / 3600.0
@@ -73,10 +74,29 @@ object ActivityEngine {
                     s = s.copy(stats = s.stats.addGather(y.defId, count))
                 }
             }
+            // Regional rare-resource rule (e.g. Smoldering Veins / Crystal Snow).
+            region.rareYield?.let { rare ->
+                val count = rng.poisson(actions.toDouble() * rare.chancePercent / 100.0 * mult)
+                if (count > 0) {
+                    gained[rare.defId] = (gained[rare.defId] ?: 0) + count
+                    s = s.addItem(rare.defId, count)
+                    s = s.copy(stats = s.stats.addGather(rare.defId, count))
+                }
+            }
             skillXp = actions * node.xpPerAction
             if (skill != null) s = Progress.skillXp(s, skill, skillXp)
             s = Progress.charXp(s, actions * node.xpPerAction / 4)
             s = EquipmentHelper.damageTool(s, actions * SimConfig.DURABILITY_PER_GATHER_ACTION)
+            // Regional hazard: chip damage per action, floored at a safe HP floor.
+            if (region.hazardPerAction > 0) {
+                val dmg = (actions * region.hazardPerAction).toInt()
+                if (dmg > 0) {
+                    val floor = (CombatStatsMath.effectiveStats(s).maxHp * SimConfig.COMBAT_RETREAT_HP_FRACTION)
+                        .toInt().coerceAtLeast(1)
+                    val hp = (s.character.health - dmg).coerceAtLeast(floor)
+                    s = s.copy(character = s.character.copy(health = hp))
+                }
+            }
         }
 
         return s to Delta(

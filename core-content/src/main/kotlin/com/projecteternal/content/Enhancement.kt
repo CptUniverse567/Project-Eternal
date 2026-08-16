@@ -52,6 +52,8 @@ object EnhancementTables {
         baseSuccessPercent = advancedSuccess,
         shardsPerAttempt = (16..30).associateWith { ((it - 15) * 3L + 8L) },
         materialPerAttempt = ItemStack("crystal_advanced", 1),
+        // Frostreach's frostvein is a second, equivalent ADVANCED-band source (Pack 01).
+        alternateMaterialPerAttempt = ItemStack("frostvein", 1),
         failure = FailureConsequence.DOWNGRADE_TWO,
         downgradeThreshold = 16,
         durabilityLossOnFail = 20,
@@ -59,7 +61,7 @@ object EnhancementTables {
         maxResolveBonusPercent = 30,
         protectionItem = "oil_preservation",
         fullNegationItem = "ward_of_stability",
-        note = "Requires Voidforged Crystals; failure drops the item 2 levels.",
+        note = "Requires Voidforged Crystals (or Frostvein); failure drops the item 2 levels.",
     )
 
     private val transcendentSuccess = buildMap {

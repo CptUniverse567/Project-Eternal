@@ -285,4 +285,6 @@ private fun compatible(spec: RetainerSpecialization, type: NodeType): Boolean = 
     RetainerSpecialization.FISHER -> type == NodeType.FISHERY
     RetainerSpecialization.FORAGER -> type == NodeType.FOREST || type == NodeType.SPECIAL
     RetainerSpecialization.CRAFTER -> type == NodeType.MINE || type == NodeType.FOREST
+    RetainerSpecialization.PROSPECTOR -> type == NodeType.MINE || type == NodeType.FOREST || type == NodeType.SPECIAL
+    RetainerSpecialization.FORGER -> type == NodeType.MINE || type == NodeType.SPECIAL
 }

@@ -32,6 +32,22 @@ object Regions {
             priceModifier = 2.5,
             yieldMultiplier = 1.6,
         ),
+        // ================= PACK 01 — OUTER REACHES =================
+        RegionDefinition(
+            id = "cindervale", name = "Cindervale", tier = 2,
+            description = "A scorched highland where the ground smokes and buried glass glows at dusk.",
+            unlockToken = "region:cindervale",
+            priceModifier = 1.6,
+            rareYield = RareYieldConfig(defId = "emberglass", chancePercent = 8),
+        ),
+        RegionDefinition(
+            id = "frostreach", name = "Frostreach", tier = 3,
+            description = "A glacial highland where metal grows cold and old things move under the ice.",
+            unlockToken = "region:frostreach",
+            priceModifier = 2.0,
+            hazardPerAction = 1.0,
+            rareYield = RareYieldConfig(defId = "frostvein", chancePercent = 8),
+        ),
     ).associateBy { it.id }
 
     fun get(id: RegionId): RegionDefinition = all[id]
@@ -206,6 +222,195 @@ object Nodes {
             actionsPerHour = 0.0,
             yields = emptyList(),
             description = "A wound in the ridge. Something fell here, and it is not done falling.",
+        ),
+
+        // ================= PACK 01 — OUTER REACHES =================
+
+        // ---- Cindervale (region:cindervale) ----
+        NodeDefinition(
+            id = "node_cinder_quarry", regionId = "cindervale", type = NodeType.MINE, tier = 2,
+            name = "Cinderlode Quarry",
+            unlockToken = "region:cindervale",
+            skills = listOf("mining"),
+            xpPerAction = 22,
+            actionsPerHour = 110.0,
+            yields = listOf(
+                YieldEntry("ore_cinder", chancePercent = 65),
+                YieldEntry("ore_iron", chancePercent = 25),
+                YieldEntry("saltash", chancePercent = 10),
+            ),
+            description = "A smoky quarry where the stone itself holds heat.",
+        ),
+        NodeDefinition(
+            id = "node_sootbark_woods", regionId = "cindervale", type = NodeType.FOREST, tier = 2,
+            name = "Sootbark Woods",
+            unlockToken = "region:cindervale",
+            skills = listOf("logging"),
+            xpPerAction = 20,
+            actionsPerHour = 105.0,
+            yields = listOf(
+                YieldEntry("sootwood", chancePercent = 70),
+                YieldEntry("wood", chancePercent = 30),
+            ),
+            description = "Blackened trees that only burn at the edges.",
+        ),
+        NodeDefinition(
+            id = "node_sunbaked_shallows", regionId = "cindervale", type = NodeType.FISHERY, tier = 2,
+            name = "Sunbaked Shallows",
+            unlockToken = "region:cindervale",
+            skills = listOf("fishing"),
+            xpPerAction = 20,
+            actionsPerHour = 95.0,
+            yields = listOf(
+                YieldEntry("ashfish", chancePercent = 60),
+                YieldEntry("fish_carp", chancePercent = 20),
+                YieldEntry("saltash", chancePercent = 20),
+            ),
+            description = "Warm shallows where the ash flats drink the river.",
+        ),
+        NodeDefinition(
+            id = "node_cinder_terraces", regionId = "cindervale", type = NodeType.FARM, tier = 2,
+            name = "Cindervale Terraces",
+            unlockToken = "region:cindervale",
+            skills = listOf("farming"),
+            xpPerAction = 20,
+            actionsPerHour = 100.0,
+            yields = listOf(
+                YieldEntry("ashgrain", chancePercent = 70),
+                YieldEntry("grain", chancePercent = 30),
+            ),
+            description = "Stepped fields cut into warm, ash-fed slopes.",
+        ),
+        NodeDefinition(
+            id = "node_ashveil_market", regionId = "cindervale", type = NodeType.TRADE_HUB, tier = 2,
+            name = "Ashveil Market",
+            unlockToken = "region:cindervale",
+            skills = listOf(),
+            xpPerAction = 0,
+            actionsPerHour = 0.0,
+            yields = emptyList(),
+            description = "A trading hub on the high road, where glass and gossip change hands.",
+        ),
+
+        // ---- Stormreach deepening (region:stormreach) ----
+        NodeDefinition(
+            id = "node_storm_quarry", regionId = "stormreach", type = NodeType.MINE, tier = 3,
+            name = "Stormscale Quarry",
+            unlockToken = "region:stormreach",
+            skills = listOf("mining"),
+            xpPerAction = 40,
+            actionsPerHour = 85.0,
+            yields = listOf(
+                YieldEntry("ore_storm", chancePercent = 55),
+                YieldEntry("ore_coal", chancePercent = 35),
+                YieldEntry("stormcrystal", chancePercent = 10),
+            ),
+            description = "A quarry where the rock buzzes under the hammer.",
+        ),
+        NodeDefinition(
+            id = "node_thunderwood", regionId = "stormreach", type = NodeType.FOREST, tier = 3,
+            name = "Thunderwood",
+            unlockToken = "region:stormreach",
+            skills = listOf("logging"),
+            xpPerAction = 38,
+            actionsPerHour = 85.0,
+            yields = listOf(
+                YieldEntry("thunderwood", chancePercent = 65),
+                YieldEntry("wood", chancePercent = 35),
+            ),
+            description = "Old trees that wear the storm like a coat.",
+        ),
+        NodeDefinition(
+            id = "node_storm_field", regionId = "stormreach", type = NodeType.FARM, tier = 3,
+            name = "Stormfield",
+            unlockToken = "region:stormreach",
+            skills = listOf("farming"),
+            xpPerAction = 38,
+            actionsPerHour = 85.0,
+            yields = listOf(
+                YieldEntry("stormgrain", chancePercent = 70),
+                YieldEntry("grain", chancePercent = 30),
+            ),
+            description = "Fields of grain that grow tall in the thunder-shadow.",
+        ),
+        NodeDefinition(
+            id = "node_deepstorm_spire", regionId = "stormreach", type = NodeType.SPECIAL, tier = 3,
+            name = "Deepstorm Spire",
+            unlockToken = "region:stormreach",
+            skills = listOf("mining"),
+            xpPerAction = 45,
+            actionsPerHour = 70.0,
+            yields = listOf(
+                YieldEntry("stormcrystal", chancePercent = 45),
+                YieldEntry("shard_resonance", chancePercent = 40),
+                YieldEntry("ore_storm", chancePercent = 15),
+            ),
+            description = "A needle of rock that draws lightning like a candle draws moths.",
+        ),
+
+        // ---- Frostreach (region:frostreach) ----
+        NodeDefinition(
+            id = "node_frost_quarry", regionId = "frostreach", type = NodeType.MINE, tier = 3,
+            name = "Frostvein Quarry",
+            unlockToken = "region:frostreach",
+            skills = listOf("mining"),
+            xpPerAction = 48,
+            actionsPerHour = 90.0,
+            yields = listOf(
+                YieldEntry("ore_frost", chancePercent = 55),
+                YieldEntry("ore_cinder", chancePercent = 30),
+                YieldEntry("saltash", chancePercent = 15),
+            ),
+            description = "A quarry of pale ore that steams in warm air.",
+        ),
+        NodeDefinition(
+            id = "node_iceshard_woods", regionId = "frostreach", type = NodeType.FOREST, tier = 3,
+            name = "Iceshard Woods",
+            unlockToken = "region:frostreach",
+            skills = listOf("logging"),
+            xpPerAction = 46,
+            actionsPerHour = 90.0,
+            yields = listOf(
+                YieldEntry("icewood", chancePercent = 65),
+                YieldEntry("sootwood", chancePercent = 35),
+            ),
+            description = "Trees of ice and wood that crack like glass in the wind.",
+        ),
+        NodeDefinition(
+            id = "node_frozen_mere", regionId = "frostreach", type = NodeType.FISHERY, tier = 3,
+            name = "Frozen Mere",
+            unlockToken = "region:frostreach",
+            skills = listOf("fishing"),
+            xpPerAction = 46,
+            actionsPerHour = 85.0,
+            yields = listOf(
+                YieldEntry("glacefish", chancePercent = 65),
+                YieldEntry("ashfish", chancePercent = 35),
+            ),
+            description = "A sheet of still water under the northern ice.",
+        ),
+        NodeDefinition(
+            id = "node_highland_tundra", regionId = "frostreach", type = NodeType.FOREST, tier = 3,
+            name = "Highland Tundra",
+            unlockToken = "region:frostreach",
+            skills = listOf("herbalism"),
+            xpPerAction = 44,
+            actionsPerHour = 85.0,
+            yields = listOf(
+                YieldEntry("frostmoss", chancePercent = 60),
+                YieldEntry("herb_brightleaf", chancePercent = 40),
+            ),
+            description = "A windswept fell where frostmoss grows in the lee of the stones. Herbalism's first true home.",
+        ),
+        NodeDefinition(
+            id = "node_frostforge_foundry", regionId = "frostreach", type = NodeType.SPECIAL, tier = 3,
+            name = "Frostforge Foundry",
+            unlockToken = "region:frostreach",
+            skills = listOf("mining"),
+            xpPerAction = 0,
+            actionsPerHour = 0.0,
+            yields = emptyList(),
+            description = "A foundry that breathes cold. Discovery unlocks the frostforge recipes.",
         ),
     ).associateBy { it.id }
 

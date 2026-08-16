@@ -18,7 +18,13 @@ sealed interface GameIntent {
 
     data object StopActivity : GameIntent
 
-    data class Enhance(val itemUid: String, val useProtection: Boolean, val useFullNegation: Boolean = false) : GameIntent
+    data class Enhance(
+        val itemUid: String,
+        val useProtection: Boolean,
+        val useFullNegation: Boolean = false,
+        /** Use the table's alternate enhancement material (e.g. Frostvein for ADVANCED). */
+        val useAlternateMaterial: Boolean = false,
+    ) : GameIntent
 
     data class Equip(val itemUid: String) : GameIntent
 

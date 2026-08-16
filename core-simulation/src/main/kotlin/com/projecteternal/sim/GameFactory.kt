@@ -43,7 +43,7 @@ object GameFactory {
         )
 
         val nodes = listOf(
-            "hollowreach", "emberreach", "stormreach", "dawnreach",
+            "hollowreach", "emberreach", "cindervale", "stormreach", "frostreach", "dawnreach",
         ).flatMap { region ->
             Nodes.inRegion(region).map(::nodeFrom)
         }

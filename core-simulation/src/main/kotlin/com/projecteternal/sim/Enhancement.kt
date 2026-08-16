@@ -43,8 +43,11 @@ object EnhancementResolver {
             return Precondition(false, "Need $shards Resonance Shards.")
         }
         val mat = table.materialPerAttempt
-        if (mat != null && state.inventoryCount(mat.defId) < mat.count) {
-            return Precondition(false, "Need ${mat.count}x ${mat.defId.replace('_', ' ')}.")
+        val alt = table.alternateMaterialPerAttempt
+        val haveMaterial = (mat == null || state.inventoryCount(mat.defId) >= mat.count) ||
+            (alt != null && state.inventoryCount(alt.defId) >= alt.count)
+        if (!haveMaterial) {
+            return Precondition(false, "Need an enhancement material.")
         }
         if (table.unlockToken.isNotEmpty() && !state.hasUnlock(table.unlockToken)) {
             return Precondition(false, "This enhancement tier is locked.")

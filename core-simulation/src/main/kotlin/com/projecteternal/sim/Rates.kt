@@ -25,10 +25,17 @@ object Rates {
         val skill = node.skills.firstOrNull() ?: return rate
         val level = state.character.skillLevel(skill)
         rate *= 1.0 + level * 0.02
-        if (hasPickaxeEquipped(state) && node.type == NodeType.MINE) {
-            rate *= SimConfig.PICKAXE_SPEED_MULTIPLIER
-        }
+        rate *= toolMultiplierFor(state, node)
         return rate
+    }
+
+    /** Equipped TOOL bonus applied when its gathering skill matches the node. */
+    private fun toolMultiplierFor(state: GameState, node: NodeDefinition): Double {
+        val tool = state.character.equipped[EquipSlot.TOOL] ?: return 1.0
+        val def = Items.get(tool.defId)
+        val skill = def.gatheringSkill ?: return 1.0
+        if (!node.skills.contains(skill)) return 1.0
+        return def.gatheringSpeedMultiplier
     }
 
     /** Yield multiplier from gathering skill mastery and regional boons. */
@@ -36,11 +43,6 @@ object Rates {
         val skill = node.skills.firstOrNull() ?: return 1.0
         val mastery = CombatStatsMath.masteryMultiplier(skill, state.character.skillLevel(skill))
         return mastery * Regions.get(node.regionId).yieldMultiplier
-    }
-
-    private fun hasPickaxeEquipped(state: GameState): Boolean {
-        val tool = state.character.equipped[EquipSlot.TOOL] ?: return false
-        return Items.get(tool.defId).id == "tool_pickaxe"
     }
 
     /** Processing/crafting actions per hour from a recipe. */
@@ -58,6 +60,12 @@ object Rates {
         rate *= 1.0 + retainer.level * 0.02
         rate *= retainer.productionSpeed
         rate *= RetainerTraits.speedMultiplier(retainer.traitIds)
+        // FORGER affinity: gathers faster at SPECIAL and industrial (MINE) nodes.
+        if (retainer.specialization == com.projecteternal.model.RetainerSpecialization.FORGER &&
+            (node.type == NodeType.SPECIAL || node.type == NodeType.MINE)
+        ) {
+            rate *= SimConfig.FORGER_NODE_MULTIPLIER
+        }
         return rate
     }
 

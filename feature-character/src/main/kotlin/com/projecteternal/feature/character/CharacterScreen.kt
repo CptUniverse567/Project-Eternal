@@ -234,6 +234,12 @@ private fun PackItemRow(repository: GameStateRepository, state: GameState, inst:
                         !locked && table != null && success != null && shards != null &&
                         state.inventoryCount("shard_resonance") >= shards &&
                         haveMaterial && inst.durability > 0
+                    val alternate = table?.alternateMaterialPerAttempt
+                    val haveAlternate = alternate == null || state.inventoryCount(alternate.defId) >= alternate.count
+                    val canEnhanceAlternate = state.hasUnlock("screen:enhance") &&
+                        !locked && table != null && success != null && shards != null &&
+                        state.inventoryCount("shard_resonance") >= shards &&
+                        haveAlternate && inst.durability > 0
                     val countProtection = state.inventoryCount(table?.protectionItem ?: "")
                     val countWard = state.inventoryCount(table?.fullNegationItem ?: "")
                     if (table != null) {
@@ -243,6 +249,9 @@ private fun PackItemRow(repository: GameStateRepository, state: GameState, inst:
                         val details = mutableListOf(band)
                         if (material != null) {
                             details += "${material.count}× ${Items.get(material.defId).name} (owned ${state.inventoryCount(material.defId)})"
+                        }
+                        if (alternate != null) {
+                            details += "or ${alternate.count}× ${Items.get(alternate.defId).name} (owned ${state.inventoryCount(alternate.defId)})"
                         }
                         if (locked) details += "locked"
                         Text(
@@ -274,6 +283,15 @@ private fun PackItemRow(repository: GameStateRepository, state: GameState, inst:
                                     modifier = Modifier.weight(1f),
                                 ) {
                                     Text("Enhance ${success?.let { "($it%)" } ?: ""}", style = MaterialTheme.typography.labelMedium)
+                                }
+                            }
+                            if (alternate != null && canEnhanceAlternate) {
+                                OutlinedButton(
+                                    onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false, useAlternateMaterial = true)) },
+                                    enabled = true,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text("Enhance w/ ${Items.get(alternate.defId).name} (${success?.let { "($it%)" } ?: ""})", style = MaterialTheme.typography.labelMedium)
                                 }
                             }
                             if (countProtection > 0) {
