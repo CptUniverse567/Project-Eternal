@@ -36,6 +36,15 @@ sealed interface GameIntent {
 
     data class Sell(val defId: String, val count: Long) : GameIntent
 
+    /** Sell every stackable instance of [defId] the player owns. */
+    data class SellAll(val defId: String) : GameIntent
+
+    /** Sell a single (unequipped) equipment instance by uid. */
+    data class SellEquipment(val itemUid: String) : GameIntent
+
+    /** Sell every unequipped equipment instance of [defId] the player owns. */
+    data class SellAllEquipment(val defId: String) : GameIntent
+
     /** null nodeId unassigns the retainer. */
     data class AssignRetainer(val retainerId: String, val nodeId: String?) : GameIntent
 

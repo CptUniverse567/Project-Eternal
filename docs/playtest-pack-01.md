@@ -84,9 +84,35 @@ enhancement checkpoints, offline) and by the fresh-save emulator coverage above.
   "Repair" with 1 kit but the engine rejects — minor UI/engine mismatch (documented; not a
   deadlock since re-forging is viable).
 
-## 5. Verification status at handoff
+## 5. Post-playtest inventory + enhancement UX pass (0.2.1)
 
-- JVM suite: **166 tests, 0 failures, 0 errors** (incl. ContentIntegrity 15, OuterReaches 23).
+### Equipment selling (implemented 0.2.1)
+- **Root cause**: Equipment instances (`equipmentItems`) were stored separately from stackable
+  inventory and never surfaced in the Sell section of the Economy screen.
+- **Fix**: Added `GameIntent.SellEquipment(uid)`, `SellAllEquipment(defId)`, and `SellAll(defId)`
+  intents with engine handlers. Equipment sells at `sellPrice` × regional modifier (data-driven,
+  no special formula). Equipped items are protected (no Sell button, engine rejects).
+- **On-device verified**: Unequipped pickaxe shows a Sell button; equipped pickaxe does not.
+  Pack 01 equipment (Cindervale/Frostforge) automatically uses the same mechanism.
+
+### Sell All
+- Per-item-type bulk sell: stackables via `SellAll(defId)` (entire stack), equipment via
+  `SellAllEquipment(defId)` (all copies except equipped). No confirmation dialog for small
+  stacks; the existing UX convention is followed.
+- On-device: empty pack state renders "No equipment in your pack" (correct for fresh save).
+
+### Enhancement UI (restructured 0.2.1)
+- **Previous**: all action buttons squeezed into horizontal rows; cramped as enhancement
+  options multiplied (Oil, Ward, Full Negation, alternate material, Repair).
+- **New**: vertically stacked `EnhanceBlock` composable — header info (level, success%, shards,
+  band, material, shatter warning) followed by full-width action buttons. No button overlaps.
+- On-device: `Enhancement` header → `+0 → +1` → `Success: 100% · Shards: 1 (Base)` — all
+  readable, vertical, no squeeze.
+
+### Verification status (0.2.1)
+- JVM suite: **176 tests, 0 failures** (EquipmentSellTest × 10, ContentIntegrityTest 15,
+  OuterReachesTest 23, plus all baseline).
 - Instrumented: `EternalCriticalPathTest` **3/3** on API-36.
-- `:app:assembleDebug` green; `app-debug.apk` (0.2.0) installed and walked on-device.
-- Deadlock audit: Refining/Engineering/Jewelry fixed; guardrail regression in place.
+- `:app:assembleDebug` green.
+- On-device: equipped protection confirmed; Sell button on unequipped gear; enhancement
+  vertical layout renders cleanly; existing Pack 01 gameplay functional.

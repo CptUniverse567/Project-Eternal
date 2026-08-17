@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.projecteternal.content.EnhancementTables
@@ -193,6 +194,7 @@ private fun EquippedRow(repository: GameStateRepository, state: GameState, slot:
 private fun PackItemRow(repository: GameStateRepository, state: GameState, inst: ItemInstance) {
     val def = Items.get(inst.defId)
     val damage = inst.maxDurability > 0 && inst.durability < inst.maxDurability
+    val broken = inst.maxDurability > 0 && inst.durability <= 0
     Card {
         Column(Modifier.fillMaxWidth().padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -200,11 +202,24 @@ private fun PackItemRow(repository: GameStateRepository, state: GameState, inst:
                 Spacer(Modifier.width(8.dp))
                 Column(Modifier.weight(1f)) {
                     Text("${def.name} +${inst.enhancementLevel}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                    val slotLabel = def.slot?.name?.lowercase()?.replace('_', ' ') ?: ""
+                    val status = when {
+                        broken -> "Broken"
+                        damage -> "Damaged (${inst.durability}/${inst.maxDurability})"
+                        else -> "Durability ${inst.durability}/${inst.maxDurability}"
+                    }
                     Text(
-                        "Durability ${inst.durability}/${inst.maxDurability} · ${def.slot?.name?.lowercase()?.replace('_', ' ')}",
+                        "$status · $slotLabel",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (broken) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+                if (def.sellPrice > 0) {
+                    OutlinedButton(
+                        onClick = { repository.dispatch(GameIntent.SellEquipment(inst.uid)) },
+                        modifier = Modifier.testTag("sell_equip_${inst.uid}"),
+                    ) { Text("Sell", style = MaterialTheme.typography.labelMedium) }
                 }
             }
             if (inst.maxDurability > 0) {
@@ -215,124 +230,135 @@ private fun PackItemRow(repository: GameStateRepository, state: GameState, inst:
                 )
             }
             Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            // Equipment actions — one per row, full width.
+            if (!broken) {
                 OutlinedButton(
                     onClick = { repository.dispatch(GameIntent.Equip(inst.uid)) },
                     enabled = inst.durability > 0,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("Equip", style = MaterialTheme.typography.labelMedium)
                 }
-                if (def.enhanceable) {
-                    val table = EnhancementTables.tableFor(inst.enhancementLevel)
-                    val success = table?.baseSuccessPercent?.get(inst.enhancementLevel)
-                    val shards = table?.shardsPerAttempt?.get(inst.enhancementLevel)
-                    val locked = table != null && table.unlockToken.isNotEmpty() && !state.hasUnlock(table.unlockToken)
-                    val material = table?.materialPerAttempt
-                    val haveMaterial = material == null || state.inventoryCount(material.defId) >= material.count
-                    val canEnhance = state.hasUnlock("screen:enhance") &&
-                        !locked && table != null && success != null && shards != null &&
-                        state.inventoryCount("shard_resonance") >= shards &&
-                        haveMaterial && inst.durability > 0
-                    val alternate = table?.alternateMaterialPerAttempt
-                    val haveAlternate = alternate == null || state.inventoryCount(alternate.defId) >= alternate.count
-                    val canEnhanceAlternate = state.hasUnlock("screen:enhance") &&
-                        !locked && table != null && success != null && shards != null &&
-                        state.inventoryCount("shard_resonance") >= shards &&
-                        haveAlternate && inst.durability > 0
-                    val countProtection = state.inventoryCount(table?.protectionItem ?: "")
-                    val countWard = state.inventoryCount(table?.fullNegationItem ?: "")
-                    if (table != null) {
-                        Spacer(Modifier.height(4.dp))
-                        val band = table.band.name.replace('_', ' ').lowercase()
-                            .replaceFirstChar { it.uppercase() }
-                        val details = mutableListOf(band)
-                        if (material != null) {
-                            details += "${material.count}× ${Items.get(material.defId).name} (owned ${state.inventoryCount(material.defId)})"
-                        }
-                        if (alternate != null) {
-                            details += "or ${alternate.count}× ${Items.get(alternate.defId).name} (owned ${state.inventoryCount(alternate.defId)})"
-                        }
-                        if (locked) details += "locked"
-                        Text(
-                            details.joinToString(" · "),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (locked) MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (table.failure == FailureConsequence.SHATTER_TO_BAND_FLOOR && inst.enhancementLevel >= table.downgradeThreshold) {
-                            Text(
-                                "Failure here shatters the item back to +${table.minLevel}.",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    }
-                    if (state.hasUnlock("screen:enhance")) {
-                        if (locked) {
-                            Text(
-                                "Enhancement locked — distill a Stormbound Catalyst first.",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        } else {
-                            if (canEnhance) {
-                                OutlinedButton(
-                                    onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false)) },
-                                    enabled = true,
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text("Enhance ${success?.let { "($it%)" } ?: ""}", style = MaterialTheme.typography.labelMedium)
-                                }
-                            }
-                            if (alternate != null && canEnhanceAlternate) {
-                                OutlinedButton(
-                                    onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false, useAlternateMaterial = true)) },
-                                    enabled = true,
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text("Enhance w/ ${Items.get(alternate.defId).name} (${success?.let { "($it%)" } ?: ""})", style = MaterialTheme.typography.labelMedium)
-                                }
-                            }
-                            if (countProtection > 0) {
-                                OutlinedButton(
-                                    onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = true)) },
-                                    enabled = canEnhance,
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text("Enhance w/ ${Items.get(table!!.protectionItem!!).name} ($countProtection)", style = MaterialTheme.typography.labelMedium)
-                                }
-                            }
-                            if (countWard > 0) {
-                                OutlinedButton(
-                                    onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false, useFullNegation = true)) },
-                                    enabled = canEnhance,
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text("Enhance w/ ${Items.get(table!!.fullNegationItem!!).name} ($countWard)", style = MaterialTheme.typography.labelMedium)
-                                }
-                            }
-                        }
-                    } else {
-                        Text(
-                            "Enhancement unlocks after the main quest 'Forge Your Blade'.",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                if (damage) {
-                    val kits = state.inventoryCount("repair_kit")
-                    val canRepair = kits > 0 && state.character.marks >= 5
-                    OutlinedButton(
-                        onClick = { repository.dispatch(GameIntent.Repair(inst.uid)) },
-                        enabled = canRepair,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("Repair", style = MaterialTheme.typography.labelMedium)
-                    }
+            }
+            if (damage) {
+                Spacer(Modifier.height(6.dp))
+                val kits = state.inventoryCount("repair_kit")
+                val canRepair = kits > 0 && state.character.marks >= 5
+                OutlinedButton(
+                    onClick = { repository.dispatch(GameIntent.Repair(inst.uid)) },
+                    enabled = canRepair,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Repair (${kits} kits)", style = MaterialTheme.typography.labelMedium)
                 }
             }
+
+            if (def.enhanceable) {
+                EnhanceBlock(repository, state, inst)
+            }
+        }
+    }
+}
+
+@Composable
+private fun EnhanceBlock(repository: GameStateRepository, state: GameState, inst: ItemInstance) {
+    val table = EnhancementTables.tableFor(inst.enhancementLevel)
+    val success = table?.baseSuccessPercent?.get(inst.enhancementLevel)
+    val shards = table?.shardsPerAttempt?.get(inst.enhancementLevel)
+    val locked = table != null && table.unlockToken.isNotEmpty() && !state.hasUnlock(table.unlockToken)
+    val material = table?.materialPerAttempt
+    val alternate = table?.alternateMaterialPerAttempt
+    val haveMaterial = material == null || state.inventoryCount(material.defId) >= material.count
+    val haveAlternate = alternate == null || state.inventoryCount(alternate.defId) >= alternate.count
+    val canEnhance = state.hasUnlock("screen:enhance") &&
+        !locked && table != null && success != null && shards != null &&
+        state.inventoryCount("shard_resonance") >= shards &&
+        haveMaterial && inst.durability > 0
+    val canEnhanceAlternate = state.hasUnlock("screen:enhance") &&
+        !locked && table != null && success != null && shards != null &&
+        state.inventoryCount("shard_resonance") >= shards &&
+        haveAlternate && inst.durability > 0
+    val countProtection = state.inventoryCount(table?.protectionItem ?: "")
+    val countWard = state.inventoryCount(table?.fullNegationItem ?: "")
+
+    Spacer(Modifier.height(10.dp))
+    // Enhancement header info.
+    Text("Enhancement", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+    if (table != null) {
+        val band = table.band.name.replace('_', ' ').lowercase().replaceFirstChar { it.uppercase() }
+        Text("+${inst.enhancementLevel} → +${inst.enhancementLevel + 1}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+        Text(
+            "Success: $success% · Shards: ${shards ?: 0} ($band)",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        val matLine = buildString {
+            if (material != null) append("${material.count}× ${Items.get(material.defId).name} (${state.inventoryCount(material.defId)})")
+            if (alternate != null) {
+                if (isNotEmpty()) append(" · ") else Unit
+                append("or ${alternate.count}× ${Items.get(alternate.defId).name} (${state.inventoryCount(alternate.defId)})")
+            }
+        }
+        if (matLine.isNotEmpty()) {
+            Text(matLine, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (inst.enhancementLevel >= table.downgradeThreshold && table.failure != FailureConsequence.DURABILITY_ONLY) {
+            val failText = when (table.failure) {
+                FailureConsequence.DURABILITY_ONLY -> ""
+                FailureConsequence.DOWNGRADE_ONE -> "Failure downgrades by 1."
+                FailureConsequence.DOWNGRADE_TWO -> "Failure downgrades by 2."
+                FailureConsequence.SHATTER_TO_BAND_FLOOR -> "Failure shatters the item back to +${table.minLevel}."
+            }
+            Text(failText, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+        }
+    }
+
+    Spacer(Modifier.height(8.dp))
+    if (!state.hasUnlock("screen:enhance")) {
+        Text(
+            "Enhancement unlocks after the main quest 'Forge Your Blade'.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        return
+    }
+    if (locked) {
+        Text(
+            "Enhancement locked — distill a Stormbound Catalyst first.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.error,
+        )
+        return
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Actions", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        OutlinedButton(
+            onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false)) },
+            enabled = canEnhance,
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text("Enhance ${success?.let { "($it%)" } ?: ""}", style = MaterialTheme.typography.labelMedium) }
+        if (alternate != null) {
+            OutlinedButton(
+                onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false, useAlternateMaterial = true)) },
+                enabled = canEnhanceAlternate,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Enhance w/ ${Items.get(alternate.defId).name} (${success ?: ""}%)", style = MaterialTheme.typography.labelMedium) }
+        }
+        if (countProtection > 0) {
+            OutlinedButton(
+                onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = true)) },
+                enabled = canEnhance,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Enhance w/ ${Items.get(table!!.protectionItem!!).name} ($countProtection)", style = MaterialTheme.typography.labelMedium) }
+        }
+        if (countWard > 0) {
+            OutlinedButton(
+                onClick = { repository.dispatch(GameIntent.Enhance(inst.uid, useProtection = false, useFullNegation = true)) },
+                enabled = canEnhance,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Enhance w/ ${Items.get(table!!.fullNegationItem!!).name} ($countWard)", style = MaterialTheme.typography.labelMedium) }
         }
     }
 }

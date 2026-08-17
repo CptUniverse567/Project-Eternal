@@ -36,6 +36,9 @@ class GameEngine {
             is GameIntent.Repair -> repair(state, intent.itemUid)
             is GameIntent.Buy -> buy(state, intent)
             is GameIntent.Sell -> sell(state, intent)
+            is GameIntent.SellAll -> sellAll(state, intent)
+            is GameIntent.SellEquipment -> sellEquipment(state, intent)
+            is GameIntent.SellAllEquipment -> sellAllEquipment(state, intent)
             is GameIntent.AssignRetainer -> assignRetainer(state, intent)
             is GameIntent.RecruitRetainer -> recruitRetainer(state, intent)
             is GameIntent.AcceptQuest -> acceptQuest(state, intent.questId, now)
@@ -216,6 +219,45 @@ class GameEngine {
             .removeItem(intent.defId, intent.count)
             .addMarks(price)
             .let { MarketService.recordTrade(it, intent.defId, intent.count, MarketService.TradeKind.SELL) }
+    }
+
+    private fun sellAll(state: GameState, intent: GameIntent.SellAll): GameState {
+        val def = Items.get(intent.defId)
+        if (def.sellPrice <= 0) return state
+        val count = state.inventoryCount(intent.defId)
+        if (count <= 0) return state
+        val price = MarketService.currentSellPrice(state, intent.defId) * count
+        return state
+            .removeItem(intent.defId, count)
+            .addMarks(price)
+            .let { MarketService.recordTrade(it, intent.defId, count, MarketService.TradeKind.SELL) }
+    }
+
+    private fun sellEquipment(state: GameState, intent: GameIntent.SellEquipment): GameState {
+        val inst = state.itemInstance(intent.itemUid) ?: return state
+        val def = Items.get(inst.defId)
+        if (def.sellPrice <= 0) return state
+        // Equipped gear is protected from accidental sale.
+        if (state.character.equipped.values.any { it.uid == inst.uid }) return state
+        val price = MarketService.currentSellPrice(state, inst.defId)
+        return state
+            .copy(equipmentItems = state.equipmentItems.filter { it.uid != inst.uid })
+            .addMarks(price)
+            .let { MarketService.recordTrade(it, inst.defId, 1, MarketService.TradeKind.SELL) }
+    }
+
+    private fun sellAllEquipment(state: GameState, intent: GameIntent.SellAllEquipment): GameState {
+        val def = Items.get(intent.defId)
+        if (def.sellPrice <= 0) return state
+        val equippedUids = state.character.equipped.values.map { it.uid }.toSet()
+        val sellable = state.equipmentItems.filter { it.defId == intent.defId && it.uid !in equippedUids }
+        if (sellable.isEmpty()) return state
+        val price = MarketService.currentSellPrice(state, intent.defId) * sellable.size
+        val removed = sellable.map { it.uid }.toSet()
+        return state
+            .copy(equipmentItems = state.equipmentItems.filter { it.uid !in removed })
+            .addMarks(price)
+            .let { MarketService.recordTrade(it, intent.defId, sellable.size.toLong(), MarketService.TradeKind.SELL) }
     }
 
     private fun recruitRetainer(state: GameState, intent: GameIntent.RecruitRetainer): GameState {

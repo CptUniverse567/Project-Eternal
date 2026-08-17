@@ -89,6 +89,42 @@ fun EconomyScreen(repository: GameStateRepository, state: GameState) {
                         advice?.hasBetterPath == true -> "💡 ${advice.betterHint} (else $price◎)"
                         else -> null
                     },
+                    trailing = {
+                        if (stack.count > 1) {
+                            OutlinedButton(
+                                onClick = { repository.dispatch(GameIntent.SellAll(stack.defId)) },
+                                modifier = Modifier.testTag("sell_all_${stack.defId}"),
+                            ) { Text("Sell All", style = MaterialTheme.typography.labelMedium) }
+                        }
+                    },
+                )
+            }
+        }
+
+        item {
+            Text("Sell Equipment", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+        }
+        val equippedUids = state.character.equipped.values.map { it.uid }.toSet()
+        val equipmentByDef = state.equipmentItems
+            .filter { it.uid !in equippedUids && Items.get(it.defId).sellPrice > 0 }
+            .groupBy { it.defId }
+            .toSortedMap()
+        if (equipmentByDef.isEmpty()) {
+            item { Text("No unequipped equipment to sell.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        } else {
+            items(equipmentByDef.toList()) { (defId, instances) ->
+                val def = Items.get(defId)
+                val price = MarketService.currentSellPrice(state, defId)
+                val sellableCount = instances.size
+                val total = price * sellableCount
+                EquipmentSellRow(
+                    icon = def.icon,
+                    name = def.name,
+                    count = sellableCount,
+                    price = "$price ◎ each",
+                    onSellOne = { repository.dispatch(GameIntent.SellEquipment(instances.first().uid)) },
+                    onSellAll = { repository.dispatch(GameIntent.SellAllEquipment(defId)) },
+                    testTag = "equip_$defId",
                 )
             }
         }
@@ -168,6 +204,7 @@ private fun MarketRow(
     onAction: () -> Unit,
     count: String? = null,
     subline: String? = null,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     Card {
         Row(
@@ -191,7 +228,48 @@ private fun MarketRow(
                     )
                 }
             }
-            OutlinedButton(onClick = onAction, enabled = enabled) { Text(actionLabel, style = MaterialTheme.typography.labelMedium) }
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedButton(onClick = onAction, enabled = enabled) { Text(actionLabel, style = MaterialTheme.typography.labelMedium) }
+                trailing?.invoke()
+            }
+        }
+    }
+}
+
+@Composable
+private fun EquipmentSellRow(
+    icon: String,
+    name: String,
+    count: Int,
+    price: String,
+    onSellOne: () -> Unit,
+    onSellAll: () -> Unit,
+    testTag: String,
+) {
+    Card(modifier = Modifier.testTag(testTag)) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(icon, style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.width(8.dp))
+            Column(Modifier.weight(1f)) {
+                Text(name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                Text(
+                    "×$count · $price",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedButton(onClick = onSellOne) { Text("Sell 1", style = MaterialTheme.typography.labelMedium) }
+                if (count > 1) {
+                    OutlinedButton(
+                        onClick = onSellAll,
+                        modifier = Modifier.testTag("sell_all_equip_$testTag"),
+                    ) { Text("Sell All", style = MaterialTheme.typography.labelMedium) }
+                }
+            }
         }
     }
 }
